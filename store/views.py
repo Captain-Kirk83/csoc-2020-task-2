@@ -4,6 +4,10 @@ from store.models import *
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Avg,Count
+from django.utils.datastructures import MultiValueDictKeyError
+from django.http import HttpResponse
+from datetime import date
 
 # Create your views here.
 
@@ -17,6 +21,13 @@ def bookDetailView(request, bid):
         'num_available': None, # set this to the number of copies of the book available, or 0 if the book isn't available
     }
     # START YOUR CODE HERE
+    obj=Book.objects.get(id=bid)
+    context['book']=obj
+    try:
+        context['num_available']=BookCopy.objects.filter(book__title=obj.title).filter(status=True).count()
+    except BookCopy.objects.get(book__title=obj.title).DoesNotExist:
+        context['num_available']=0
+
     
     
     return render(request, template_name, context=context)
@@ -32,6 +43,13 @@ def bookListView(request):
     get_data = request.GET
     # START YOUR CODE HERE
     
+
+    
+    try:
+        context['books']=Book.objects.filter(title=get_data['title']).filter(author=get_data['author']).filter(genre=get_data['genre'])
+    except MultiValueDictKeyError:
+        context['books']=Book.objects.all()
+    
     
     return render(request, template_name, context=context)
 
@@ -46,10 +64,12 @@ def viewLoanedBooks(request):
     BookCopy model. Only those book copies should be included which have been loaned by the user.
     '''
     # START YOUR CODE HERE
-    
+    try:
+        context['books']=BookCopy.objects.filter(borrower=request.user)
+        return render(request, template_name, context=context)
+    except AttributeError:
+        return HttpResponse('No book loaned')
 
-
-    return render(request, template_name, context=context)
 
 @csrf_exempt
 @login_required
@@ -63,7 +83,17 @@ def loanBookView(request):
     '''
     # START YOUR CODE HERE
     book_id = None # get the book id from post data
-
+    book_id = request.POST['bid']
+    obj=Book.objects.get(id=book_id)
+    obj1=BookCopy.objects.filter(book__id=obj.id).filter(status=True)
+    if(obj1[0].DoesNotExist):
+        response_data['message']='failure'
+    else:
+        obj1[0].status=False
+        obj1[0].borrower=request.user
+        obj1[0].borrow_date=date.today()
+        obj1[0].save()
+        response_data['message']='success'
 
     return JsonResponse(response_data)
 
@@ -77,6 +107,30 @@ to make this feature complete
 @csrf_exempt
 @login_required
 def returnBookView(request):
-    pass
+    template_name = 'store/loaned_books.html'
+    get_data = request.POST
+    obj=BookCopy.objects.get(book__id=get_data['bid'])
+    obj.borrower=None
+    obj.borrow_date=None
+    obj.status=True
+    obj.save()
+    context = {
+        'message' : 'success',
+    }
+    return render(request, template_name, context=context)
 
 
+@login_required
+def rate_review(request):
+    bks = Book.objects.order_by('title').annonate(rating=Avg('RateModel__bookRate'))
+    context = { 'book': bks}
+
+    return render(request, 'store/book_detail.html', context=context)
+
+@login_required
+def rateBook(request):
+    book_id=request.POST['bid']
+    obj=RateModel.booktoRate.objects.get(pk=book_id)
+    obj.bookRate=request.POST['rate']
+    print(request.POST['rate'])
+    return JsonResponse(obj)

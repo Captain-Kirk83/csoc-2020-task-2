@@ -21,7 +21,7 @@ class BookCopy(models.Model):
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
     borrow_date = models.DateField(null=True, blank=True)
     # True status means that the copy is available for issue, False means unavailable
-    status = models.BooleanField(default=False)
+    status = models.BooleanField(default=True)
     borrower = models.ForeignKey(User, related_name='borrower', null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self):
@@ -30,3 +30,29 @@ class BookCopy(models.Model):
         else:
             return f'{self.book.title} - Available'
 
+class RateModel(models.Model):
+
+
+    REVIEWS= (
+        ('10', '10'),
+        ('9', '9'),
+        ('8', '8'),
+        ('7', '7'),
+        ('6', '6'),
+        ('5', '5'),
+        ('4', '4'),
+        ('3', '3'),
+        ('2', '2'),
+        ('1', '1'),
+        ('0', '0'),
+    )
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    booktoRate = models.ForeignKey(Book, on_delete=models.CASCADE)
+    bookRate = models.PositiveIntegerField( choices=REVIEWS, default="10")
+
+    class Meta:
+        verbose_name_plural = 'rating'
+
+    def __str__(self):
+        return str(self.booktoRate)

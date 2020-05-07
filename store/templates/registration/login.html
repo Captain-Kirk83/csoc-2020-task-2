@@ -1,0 +1,18 @@
+{% extends "store/index.html" %}
+
+
+{% block content %}
+
+
+<div style="margin-top: 100px">
+<form method="POST" class="form-group">
+    {% csrf_token %}
+    {{ form }}
+    
+    <p>Don't have an account?<a href="/accounts/register">Create one</a></p>
+    <button type="submit" class="btn btn-success">Login</button><br>
+    
+</form>
+</div>
+
+{% endblock %}
