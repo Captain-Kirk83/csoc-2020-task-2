@@ -8,6 +8,6 @@ urlpatterns = [
     path('books/loaned/', viewLoanedBooks, name="view-loaned"),
     path('books/loan/', loanBookView, name="loan-book"),
     path('books/return/', returnBookView, name="return-book"),
-    path('books/ratereview/',rate_review, name="rate-review"),
+    path('books/ratereview/',ratereview, name="rate-review"),
     path('books/rate/',rateBook, name="rate-book"),
 ]

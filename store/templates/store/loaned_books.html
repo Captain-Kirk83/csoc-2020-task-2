@@ -29,7 +29,7 @@
         <td>{{ copy.book.author }}</td>
         <td>{{ copy.book.genre }}</td>
         <td>{{ copy.borrow_date }}</td>
-        <td><button class="btn btn-primary" onclick="returnBook({{ copy.id }})">Return {{ copy.book.title }}</button></td>
+        <td><button class="btn btn-primary" onclick="returnBook({{ copy.book.id }})">Return {{ copy.book.title }}</button></td>
         </tr>
         {% endfor %}
     </tbody>
@@ -44,12 +44,13 @@ function returnBook(bid){
 			bid: bid,
 		},
 		success: function(data, status, xhr){
-			if(data['message'] == "success"){
+			if(data['message'] == 'success'){
                 alert("Book successfully returned");
                 window.location.replace("/books");
 			}
 			else{
 				alert("Unable to return this book");
+				alert(data['message']);
 			}
 		},
 		error: function(xhr, status, err){
