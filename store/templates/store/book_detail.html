@@ -27,17 +27,16 @@
 </div>
 <button class="btn btn-primary" id="loan-button">Loan {{ book.title }}</button>
 <script>
-	var l=Document.getElementById('loan-button');
-	
-	l.addEventListener("click",function(){
+	var l=document.getElementById('loan-button');
+	l.addEventListener("click",()=>{
     	$.ajax({
 			url: "/books/loan/",
 			method: "POST",
 			data: {
 				bid: {{ book.id }}
 				},
-			success: function(data, status, xhr){
-				if(data['message'] == "success"){
+			success: (data, status, xhr)=>{
+				if(data['message'] == 'success'){
                 	alert("Book successfully issued");
                 	window.location.replace("/books/loaned/");
 				}
@@ -45,17 +44,17 @@
 					alert("Unable to issue this book");
 				}
 			},
-			error: function(xhr, status, err){
+			error: (xhr, status, err)=>{
 				alert("Some error occured");
 			}
 
 		})
 	})
 
-	var r=Document.getElementById('rate');
-	r.addEventListener("click",function(){
-
-	var num=Document.getElementById('rate').value.trim();
+	var r=document.getElementById('rate-button');
+	r.addEventListener("click",()=>{
+	
+	var num=document.getElementById('rate').value.trim();
 	if(num<0 || num>10){
 		alert("Rating should be between 0 and 10");
 	}
@@ -65,16 +64,17 @@
 			method: "POST",
 			data: {
 				bid : {{ book.id }},
-				rate: num,
+				rate: num
 			},
-			success: function(data, status, xhr){
+			success: (data, status, xhr)=>{
                 window.location.replace("/books/ratereview/");
-			error: function(xhr, status, err){
+                },
+			error: (xhr, status, err)=>{
 				alert("Some error occured");
 			}
 
 		})
+	}
 	})
-		}
 </script>
 {% endblock %}

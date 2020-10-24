@@ -86,13 +86,13 @@ def loanBookView(request):
     book_id = request.POST['bid']
     obj=Book.objects.get(id=book_id)
     obj1=BookCopy.objects.filter(book__id=obj.id).filter(status=True)
-    if(obj1[0].DoesNotExist):
+    if(obj1.count==0):
         response_data['message']='failure'
     else:
-        obj1[0].status=False
-        obj1[0].borrower=request.user
-        obj1[0].borrow_date=date.today()
+        
+        obj1[0].saves('False',request.user,date.today())
         obj1[0].save()
+        
         response_data['message']='success'
 
     return JsonResponse(response_data)
@@ -109,19 +109,22 @@ to make this feature complete
 def returnBookView(request):
     template_name = 'store/loaned_books.html'
     get_data = request.POST
-    obj=BookCopy.objects.get(book__id=get_data['bid'])
-    obj.borrower=None
-    obj.borrow_date=None
-    obj.status=True
-    obj.save()
-    context = {
-        'message' : 'success',
-    }
-    return render(request, template_name, context=context)
+    obj=BookCopy.objects.filter(book__id=get_data['bid'])
+    if(obj.count!=0):
+        for i in obj:
+            if(i.status==False):
+                i.saves('True',None,None)
+                i.save()
+                break
+    response_data = {
+        'message': 'success',
+        }
+        
+    return JsonResponse(response_data)
 
 
 @login_required
-def rate_review(request):
+def ratereview(request):
     bks = Book.objects.order_by('title').annonate(rating=Avg('RateModel__bookRate'))
     context = { 'book': bks}
 
@@ -132,5 +135,5 @@ def rateBook(request):
     book_id=request.POST['bid']
     obj=RateModel.booktoRate.objects.get(pk=book_id)
     obj.bookRate=request.POST['rate']
-    print(request.POST['rate'])
+    print(obj)
     return JsonResponse(obj)
